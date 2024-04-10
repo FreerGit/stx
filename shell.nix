@@ -1,6 +1,6 @@
 { pkgs ? import <nixpkgs> { } }:
 let
-  odin-stx = pkgs.llvmPackages_17.stdenv.mkDerivation (rec {
+  odin-stx = pkgs.gcc13Stdenv.mkDerivation (rec {
     name = "stx";
     src = ./.;
     dontConfigure = true;
@@ -11,7 +11,8 @@ pkgs.mkShell {
   nativeBuildInputs = with pkgs; [     
     bintools
     llvm
-    clang_18
-    libclang
+    gcc13
+    libgcc
+    go-task
   ];
 }

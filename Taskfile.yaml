@@ -1,0 +1,21 @@
+version: '3'
+tasks:
+  build:
+    cmds:
+      - gcc -std=c2x -O3 -march=native stx_test.c -o target/stx.out
+
+  run:
+    cmds:
+      - ./target/stx.out
+    deps: [build]
+    
+
+  build-debug:
+    cmds:
+      - gcc -std=c2x -g @compiler_flags stx_test.c -o target/stx.out
+
+  run-debug:
+    cmds:
+      - ./target/stx.out
+    deps: [build-debug]
+
