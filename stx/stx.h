@@ -37,6 +37,7 @@ typedef size_t usize;
 #define memccpy(a, b, n) __builtin_memccpy(a, b, n)
 #define memmove(a, b, n) __builtin_memmove(a, b, n)
 #define memcmp(a, b, n) __builtin_memcmp(a, b, n)
+#define memeql(a, b, n) !__builtin_memcmp(a, b, n)
 
 // Nice utility to check the timing of a function
 #define CHECK_TIME(x)                                             \
