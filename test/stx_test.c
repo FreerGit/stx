@@ -50,28 +50,42 @@ void pool_test(void) {
 
 #include <stdlib.h>
 
+typedef struct {
+  uint64_t a;
+  uint64_t b;
+  uint64_t c;
+  uint64_t d;
+} T;
+
 void arena_test(void) {
   size_t size = 1024 * 64;
   unsigned char backing_buffer[size];
   Arena arena = arena_init(backing_buffer, size);
   Allocator allocator = arena_alloc_init(&arena);
 
-  int *a = allocator_alloc(int, 100, allocator);
-  uint16_t *b = allocator_alloc(uint16_t, 100, allocator);
-  size_t *c = allocator_alloc(size_t, 100, allocator);
+  CHECK_TIME({
+    int *a = allocator_alloc(int, 100, allocator);
+    uint16_t *b = allocator_alloc(uint16_t, 100, allocator);
+    size_t *c = allocator_alloc(size_t, 100, allocator);
+    T *d = allocator_alloc(T, 100, allocator);
 
-  for (int x = 0; x < 100; x++)
-    a[x] = x;
+    for (int x = 0; x < 100; x++)
+      a[x] = x;
 
-  for (uint16_t y = 0; y < 100; y++)
-    b[y] = y;
+    for (uint16_t y = 0; y < 100; y++)
+      b[y] = y;
 
-  for (size_t z = 0; z < 100; z++)
-    c[z] = z;
+    for (size_t z = 0; z < 100; z++)
+      c[z] = z;
 
-  ASSERT_TRUE(a[50] = 50);
-  ASSERT_TRUE(b[50] = 50);
-  ASSERT_TRUE(c[50] = 50);
+    for (uint64_t g = 0; g < 100; g++)
+      d[g].a = g;
+
+    ASSERT_TRUE(a[25] = 25);
+    ASSERT_TRUE(b[50] = 50);
+    ASSERT_TRUE(c[75] = 75);
+    ASSERT_TRUE(d[100].a = 100);
+  })
 
   allocator.free_all(allocator.allocator);
   ASSERT_TRUE(((Arena *)allocator.allocator)->curr_offset == 0);

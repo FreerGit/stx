@@ -40,15 +40,14 @@ typedef size_t usize;
 #define memeql(a, b, n) !__builtin_memcmp(a, b, n)
 
 // Nice utility to check the timing of a function
-#define CHECK_TIME(x)                                             \
-  {                                                               \
-    struct timespec start, end;                                   \
-    timespec_get(&start, TIME_UTC);                               \
-    x;                                                            \
-    timespec_get(&end, TIME_UTC);                                 \
-    long double f = ((double)end.tv_sec * 1e9 + end.tv_nsec) -    \
-                    ((double)start.tv_sec * 1e9 + start.tv_nsec); \
-    printf("time %Lf ns\n", f);                                   \
+#define CHECK_TIME(x)                         \
+  {                                           \
+    struct timespec start, end;               \
+    timespec_get(&start, TIME_UTC);           \
+    x;                                        \
+    timespec_get(&end, TIME_UTC);             \
+    long f = (end.tv_nsec) - (start.tv_nsec); \
+    printf("time %ld ns\n", f);               \
   }
 
 #endif
