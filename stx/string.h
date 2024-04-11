@@ -1,7 +1,7 @@
+#include "stx.h"
+
 #ifndef STRING_H
 #define STRING_H
-
-#include "stx.h"
 
 // ------------------------------------------------------------- //
 //    Reject null-terminated strings, embrace modernity.

@@ -1,7 +1,8 @@
+#include "stx.h"
+
 #ifndef MEM_H
 #define MEM_H
 
-#include "stx.h"
 #include <assert.h>
 #include <stddef.h>
 
@@ -46,6 +47,22 @@ uintptr_t align_forward_uintptr(uintptr_t ptr, uintptr_t align) {
 }
 
 // ------------------------------------------------------------- //
+//                    Allocator Interface
+// ------------------------------------------------------------- //
+
+// TODO(imp) Auto-alignment? Pass alignment? Seperate procedure?
+typedef struct {
+  void *(*alloc)(void *allocator, size_t bytes);
+  void (*free)(void *allocator, void *ptr);
+  void (*free_all)(void *allocator);
+  void *allocator;
+} Allocator;
+
+#define allocator_alloc(T, n, a) ((T *)((a).alloc((a).allocator, sizeof(T) * n)))
+#define allocator_free(p, a) ((a).free((a).allocator, p))
+#define allocator_free_all(a) ((a).free((a).allocator))
+
+// ------------------------------------------------------------- //
 //            Arena Allocator (Linear Allactor)
 // ------------------------------------------------------------- //
 
@@ -58,11 +75,11 @@ typedef struct {
   size_t curr_offset;
 } Arena;
 
-void arena_init(Arena *a, void *backing_buffer, size_t backing_buffer_length) {
-  a->buf = (unsigned char *)backing_buffer;
-  a->buf_len = backing_buffer_length;
-  a->curr_offset = 0;
-  a->prev_offset = 0;
+#define arena_alloc_init(a) \
+  (Allocator) { arena_alloc, arena_free, arena_free_all, a }
+
+Arena arena_init(void *backing_buffer, size_t backing_buffer_length) {
+  return (Arena){.buf = (unsigned char *)backing_buffer, .buf_len = backing_buffer_length};
 }
 
 void *arena_alloc_align(Arena *a, size_t size, size_t align) {
@@ -77,8 +94,6 @@ void *arena_alloc_align(Arena *a, size_t size, size_t align) {
     a->prev_offset = offset;
     a->curr_offset = offset + size;
 
-    // Zero new memory by default
-    memset(ptr, 0, size);
     return ptr;
   }
   // Escape early, will probably change this.
@@ -87,8 +102,8 @@ void *arena_alloc_align(Arena *a, size_t size, size_t align) {
 }
 
 // Because C doesn't have default parameters
-void *arena_alloc(Arena *a, size_t size) {
-  return arena_alloc_align(a, size, DEFAULT_ALIGNMENT);
+void *arena_alloc(void *a, size_t size) {
+  return arena_alloc_align((Arena *)a, size, DEFAULT_ALIGNMENT);
 }
 
 void *arena_resize_align(Arena *a, void *old_memory, size_t old_size, size_t new_size, size_t align) {
@@ -125,7 +140,14 @@ void *arena_resize(Arena *a, void *old_memory, size_t old_size, size_t new_size)
   return arena_resize_align(a, old_memory, old_size, new_size, DEFAULT_ALIGNMENT);
 }
 
-void arena_free_all(Arena *a) {
+// Does nothing.
+void arena_free(void *allocator, void *ptr) {
+  (void)allocator;
+  (void)ptr;
+}
+
+void arena_free_all(void *allocator) {
+  Arena *a = allocator;
   a->curr_offset = 0;
   a->prev_offset = 0;
 }
@@ -146,7 +168,7 @@ void temp_arena_memory_end(Temp_Arena_Memory temp) {
 }
 
 // ------------------------------------------------------------- //
-//                        Pool Allocator
+//                Pool Allocator (Block Allocator)
 // ------------------------------------------------------------- //
 
 typedef struct Pool_Free_Node Pool_Free_Node;
@@ -154,14 +176,13 @@ struct Pool_Free_Node {
   Pool_Free_Node *next;
 };
 
-typedef struct Pool Pool;
-struct Pool {
+typedef struct {
   unsigned char *buf;
   size_t buf_len;
   size_t chunk_size;
 
   Pool_Free_Node *head; // Free List Head
-};
+} Pool;
 
 void pool_free_all(Pool *p);
 

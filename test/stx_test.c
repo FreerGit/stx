@@ -1,83 +1,11 @@
 
+#include "../stx/dyn_array.h"
 #include "../stx/mem.h"
 #include "../stx/stx.h"
 
-// int main(int argc, char **argv) {
-// }
-
 #include <stddef.h>
 #include <stdint.h>
-
-// #include <assert.h>
 #include <stdio.h>
-// #include <string.h>
-
-// int main() {
-//   // CHECK_TIME(
-
-//   //     {
-//   int i;
-
-//   // unsigned char backing_buffer[256];
-//   // Arena a = {};
-//   // arena_init(&a, backing_buffer, len(backing_buffer));
-
-//   bool a;
-//   bool b;
-//   // for (i = 0; i < 1000000; i++) {
-//   CHECK_TIME({
-//     for (i = 0; i < 1000000; i++) {
-
-//       a = is_power_of_two(64);
-//     }
-//   });
-
-//   CHECK_TIME({
-//     for (i = 0; i < 1000000; i++) {
-
-//       b = is_power_of_t(64);
-//     }
-//   });
-
-//   // int *x;
-//   // float *f;
-//   // str_t str = str_new_static("Hellope");
-
-//   // Reset all arena offsets for each loop
-//   // arena_free_all(&a);
-
-//   // x = (int *)arena_alloc(&a, sizeof(int));
-//   // f = (float *)arena_alloc(&a, sizeof(float));
-//   // str = arena_alloc(&a, 10);
-
-//   // *x = 123;
-//   // *f = 987;
-//   // str_t nstr = {"            ", len("            ")};
-//   // str_t nstr = str_t("AAAA");
-//   // str_t xx = str_t("body");
-//   // str_t abc = {};
-//   // str_t y = str_copy(nstr, xx);
-//   // // str_t a = str_t("hej");
-//   // printf("%td: %s\n", nstr.len, nstr.buf);
-
-//   // printf("%d\n", str_equal(str_t("body"), str_t("body")));
-//   // memcpy(str, "Hellope", 7);
-
-//   // printf("%p: %d\n", x, *x);
-//   // printf("%p: %f\n", f, *f);
-
-//   // str = arena_resize(&a, str, 10, 16);
-//   // memcpy(str + 7, " world!", 7);
-//   // printf("%p: %s\n", str, str);
-//   // }
-
-//   // arena_free_all(&a);
-//   // }
-
-//   //   )
-
-//   return 0;
-// }
 
 static int global_total_tests;
 static int global_failed_tests;
@@ -120,37 +48,33 @@ void pool_test(void) {
   pool_free(&p, d);
 }
 
+#include <stdlib.h>
+
 void arena_test(void) {
-  int i;
+  size_t size = 1024 * 64;
+  unsigned char backing_buffer[size];
+  Arena arena = arena_init(backing_buffer, size);
+  Allocator allocator = arena_alloc_init(&arena);
 
-  unsigned char backing_buffer[256];
-  Arena a = {0};
-  arena_init(&a, backing_buffer, 256);
+  int *a = allocator_alloc(int, 100, allocator);
+  uint16_t *b = allocator_alloc(uint16_t, 100, allocator);
+  size_t *c = allocator_alloc(size_t, 100, allocator);
 
-  for (i = 0; i < 10; i++) {
-    int *x;
-    uint64_t *f;
-    char *str;
+  for (int x = 0; x < 100; x++)
+    a[x] = x;
 
-    // Reset all arena offsets for each loop
-    arena_free_all(&a);
+  for (uint16_t y = 0; y < 100; y++)
+    b[y] = y;
 
-    x = (int *)arena_alloc(&a, sizeof(int));
-    f = (uint64_t *)arena_alloc(&a, sizeof(float));
-    str = arena_alloc(&a, 10);
+  for (size_t z = 0; z < 100; z++)
+    c[z] = z;
 
-    *x = 123;
-    *f = 987;
-    memmove(str, "Hellope", 7);
-    ASSERT_TRUE(*x == 123)
-    ASSERT_TRUE(*f == 987)
+  ASSERT_TRUE(a[50] = 50);
+  ASSERT_TRUE(b[50] = 50);
+  ASSERT_TRUE(c[50] = 50);
 
-    str = arena_resize(&a, str, 10, 16);
-    memmove(str + 7, " world!", 7);
-    ASSERT_TRUE(memeql(str, "Hellope world!", 15));
-  }
-
-  arena_free_all(&a);
+  allocator.free_all(allocator.allocator);
+  ASSERT_TRUE(((Arena *)allocator.allocator)->curr_offset == 0);
 }
 
 int main() {
