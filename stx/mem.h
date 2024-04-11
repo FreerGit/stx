@@ -51,6 +51,7 @@ uintptr_t align_forward_uintptr(uintptr_t ptr, uintptr_t align) {
 // ------------------------------------------------------------- //
 
 // TODO(imp) Auto-alignment? Pass alignment? Seperate procedure?
+// TODO(imp) realloc, useful for things like dynamic arrays.
 typedef struct {
   void *(*alloc)(void *allocator, size_t bytes);
   void (*free)(void *allocator, void *ptr);
