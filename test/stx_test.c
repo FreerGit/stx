@@ -2,103 +2,27 @@
 #include "../stx/dyn_array.h"
 #include "../stx/mem.h"
 #include "../stx/stx.h"
+#include "mem_test.h"
+#include "string_test.h"
+#include "testlib.h"
 
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 
-static int global_total_tests;
-static int global_failed_tests;
-
-#define ASSERT_TRUE(expression)                                      \
-  ++global_total_tests;                                              \
-  if (!(expression)) {                                               \
-    ++global_failed_tests;                                           \
-    printf("%s(%d): expression assert fail.\n", __FILE__, __LINE__); \
-  }
-
-void pool_test(void) {
-  unsigned char backing_buffer[1024];
-  Pool p;
-  uint64_t *a, *b, *c, *d, *e, *f;
-  pool_init(&p, backing_buffer, 1024, 64, DEFAULT_ALIGNMENT);
-
-  a = pool_alloc(&p);
-  *a = 5;
-  b = pool_alloc(&p);
-  c = pool_alloc(&p);
-  d = pool_alloc(&p);
-  e = pool_alloc(&p);
-  f = pool_alloc(&p);
-
-  pool_free(&p, f);
-  pool_free(&p, c);
-  pool_free(&p, b);
-  pool_free(&p, d);
-
-  d = pool_alloc(&p);
-
-  ASSERT_TRUE(*a == 5);
-  pool_free(&p, a);
-
-  a = pool_alloc(&p);
-
-  pool_free(&p, e);
-  pool_free(&p, a);
-  pool_free(&p, d);
-}
-
-#include <stdlib.h>
-
-typedef struct {
-  uint64_t a;
-  uint64_t b;
-  uint64_t c;
-  uint64_t d;
-} T;
-
-void arena_test(void) {
-  size_t size = 1024 * 64;
-  unsigned char backing_buffer[size];
-  Arena arena = arena_init(backing_buffer, size);
-  Allocator allocator = arena_alloc_init(&arena);
-
-  CHECK_TIME({
-    int *a = allocator_alloc(int, 100, allocator);
-    uint16_t *b = allocator_alloc(uint16_t, 100, allocator);
-    size_t *c = allocator_alloc(size_t, 100, allocator);
-    T *d = allocator_alloc(T, 100, allocator);
-
-    for (int x = 0; x < 100; x++)
-      a[x] = x;
-
-    for (uint16_t y = 0; y < 100; y++)
-      b[y] = y;
-
-    for (size_t z = 0; z < 100; z++)
-      c[z] = z;
-
-    for (uint64_t g = 0; g < 100; g++)
-      d[g].a = g;
-
-    ASSERT_TRUE(a[25] = 25);
-    ASSERT_TRUE(b[50] = 50);
-    ASSERT_TRUE(c[75] = 75);
-    ASSERT_TRUE(d[100].a = 100);
-  })
-
-  allocator.free_all(allocator.allocator);
-  ASSERT_TRUE(((Arena *)allocator.allocator)->curr_offset == 0);
-}
+int global_total_tests;
+int global_failed_tests;
 
 int main() {
+
   int result = (global_failed_tests != 0);
 
-  pool_test();
-  arena_test();
+  CHECK_TIME(pool_test(), "Pool test took:");
+  CHECK_TIME(arena_test(), "Arena test took:");
+  CHECK_TIME(string_test(), "String test took:");
 
-  printf("Unit Tests %s: %d/%d passed.\n",
-         result ? "Failed" : "Successful",
+  printf("%s: %d/%d passed.\e[0m\n",
+         result ? "\x1B[31mUnit Tests Failed" : "\x1B[32mUnit Tests Successful",
          global_total_tests - global_failed_tests,
          global_total_tests);
 }

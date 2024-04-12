@@ -1,10 +1,11 @@
 
 CC = gcc
-ifeq ($(BUILD), debug)
-CFLAGS = -std=c2x -Wextra -Wall -Wfloat-equal -Wundef -Wshadow -Wpointer-arith -Wcast-align -Wstrict-prototypes -Wstrict-overflow=5 -Wwrite-strings  -Wcast-qual -Wswitch-default -Wswitch-enum -Wconversion -Wunreachable-code -fno-omit-frame-pointer -fno-var-tracking-assignments -Wformat=2
-SANFLAGS = -fsanitize=address -fsanitize=undefined -fsanitize-address-use-after-scope
-else 
+ifeq ($(BUILD), release)
 CFLAGS = -std=c2x -Os -finline-functions -s -DNDEBUG
+else
+BUILD = debug
+CFLAGS = -std=c2x -Wextra -Wall -Wfloat-equal -Wundef -Wshadow -Wpointer-arith -Wcast-align -Wstrict-prototypes -Wstrict-overflow=5 -Wwrite-strings  -Wcast-qual -Wswitch-default -Wswitch-enum -Wconversion -Wunreachable-code -fno-omit-frame-pointer -fno-var-tracking-assignments -Wformat=2 -Wno-discarded-qualifiers
+SANFLAGS = -fsanitize=address -fsanitize=undefined -fsanitize-address-use-after-scope
 endif
 TARGET := a.out
 BUILD_FOLDER = build
@@ -14,9 +15,10 @@ OBJS := $(patsubst %.c,%.o,$(SRCS))
 
 all: $(TARGET)
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) $(SANFLAGS) -o $@ $(BUILD_FOLDER)/$(notdir $^)
+	$(info BUILD=$(BUILD))
+	@$(CC) $(CFLAGS) $(SANFLAGS) -o $@ $(BUILD_FOLDER)/$(notdir $^)
 %.o: %.c
-	$(CC) $(CFLAGS) $(SANFLAGS)  -c $< -o $(BUILD_FOLDER)/$(notdir $@)
+	@$(CC) $(CFLAGS) $(SANFLAGS)  -c $< -o $(BUILD_FOLDER)/$(notdir $@)
 
 test: $(TARGET)
 	@echo " "

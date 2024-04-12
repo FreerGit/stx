@@ -27,7 +27,7 @@ typedef size_t usize;
 // #define assert(c) while (!(c)) __builtin_unreachable()
 
 // Useful macros
-#define count_of(a) (ptrdiff_t)(sizeof(a) / sizeof(*(a)))
+#define count_of(a) (size_t)(sizeof(a) / sizeof(*(a)))
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
 // #define new(a, t, n) (t *)alloc(a, sizeof(t), n)
@@ -40,14 +40,14 @@ typedef size_t usize;
 #define memeql(a, b, n) !__builtin_memcmp(a, b, n)
 
 // Nice utility to check the timing of a function
-#define CHECK_TIME(x)                         \
+#define CHECK_TIME(x, msg)                    \
   {                                           \
     struct timespec start, end;               \
     timespec_get(&start, TIME_UTC);           \
     x;                                        \
     timespec_get(&end, TIME_UTC);             \
     long f = (end.tv_nsec) - (start.tv_nsec); \
-    printf("time %ld ns\n", f);               \
+    printf("%s %ld ns\n", msg, f);            \
   }
 
 #endif
