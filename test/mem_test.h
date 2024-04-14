@@ -56,12 +56,17 @@ void pool_test(void) {
   pool_init(&p, backing_buffer, 1024, 64, DEFAULT_ALIGNMENT);
 
   a = (uint64_t *)pool_alloc(&p);
-  *a = 5;
   b = (uint64_t *)pool_alloc(&p);
   c = (uint64_t *)pool_alloc(&p);
   d = (uint64_t *)pool_alloc(&p);
   e = (uint64_t *)pool_alloc(&p);
   f = (uint64_t *)pool_alloc(&p);
+  *a = 5;
+  *b = 5;
+  *c = 5;
+  *d = 5;
+  *e = 5;
+  *f = 5;
 
   pool_free(&p, f);
   pool_free(&p, c);
