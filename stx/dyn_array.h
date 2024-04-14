@@ -5,10 +5,6 @@
 #ifndef DYN_ARRAY_H
 #define DYN_ARRAY_H
 
-// onst size_t new_size = sizeof(ListPrelude) + new_capacity * item_size;
-
-// prelude = prelude->allocator->realloc(prelude, new_size);
-
 typedef struct {
   size_t len;
   size_t capacity;
@@ -21,15 +17,16 @@ static_assert(sizeof(Array_Header) == 32);
 
 #define ARRAY_INITIAL_CAPACITY 16
 
-#define array(T, a) array_init(sizeof(T), ARRAY_INITIAL_CAPACITY, a)
+#define array(T, a) array_init(sizeof(T), ARRAY_INITIAL_CAPACITY, DEFAULT_ALIGNMENT, a)
+#define array_align(T, align, a) array_init(sizeof(T), ARRAY_INITIAL_CAPACITY, align, a)
 
 #define array_header(a) ((Array_Header *)(a)-1)
 #define array_length(a) (array_header(a)->len)
 #define array_capacity(a) (array_header(a)->capacity)
 
-#define array_append(a, v) (                      \
-    (a) = array_ensure_capacity(a, 1, sizeof(v)), \
-    (a)[array_header(a)->len] = (v),              \
+#define array_append(a, v) (                   \
+    (a) = array_ensure_capacity(a, sizeof(v)), \
+    (a)[array_header(a)->len] = (v),           \
     &(a)[array_header(a)->len++])
 
 #define array_remove(a, i)             \
@@ -47,12 +44,11 @@ static_assert(sizeof(Array_Header) == 32);
 
 #define array_pop_back(a) (array_header(a)->len -= 1)
 
-void *array_init(size_t item_size, size_t capacity, Allocator *a) {
+void *array_init(size_t item_size, size_t capacity, size_t align, Allocator *a) {
   void *ptr = 0;
   size_t size = item_size * capacity + sizeof(Array_Header);
 
-  // TODO(imp) Alingment?
-  Array_Header *h = a->alloc(size, a->allocator);
+  Array_Header *h = a->alloc_align(size, align, a->allocator);
 
   if (h) {
     h->len = 0;
@@ -64,36 +60,19 @@ void *array_init(size_t item_size, size_t capacity, Allocator *a) {
   return ptr;
 }
 
-void *array_ensure_capacity(void *a, size_t item_count, size_t item_size) {
+void *array_ensure_capacity(void *a, size_t item_size) {
   Array_Header *h = array_header(a);
-  size_t desired_capacity = h->len + item_count;
+  size_t desired_capacity = h->len + 1;
+  if (h->capacity > desired_capacity)
+    return ++h;
 
-  if (h->capacity < desired_capacity) {
-    size_t new_capacity = h->capacity * 2;
-    while (new_capacity < desired_capacity) {
-      new_capacity *= 2;
-    }
+  size_t new_capacity = h->capacity * 2;
+  size_t old_size = sizeof(*h) + h->len * item_size;
+  size_t new_size = sizeof(Array_Header) + new_capacity * item_size;
 
-    size_t new_size = sizeof(Array_Header) + new_capacity * item_size;
-    Array_Header *new_h = h->a->alloc(new_size, h->a->allocator);
-
-    if (new_h) {
-      size_t old_size = sizeof(*h) + h->len * item_size;
-      memcpy(new_h, h, old_size);
-
-      if (h->a->free) {
-        h->a->free(old_size, h, h->a->allocator);
-      }
-
-      new_h->capacity = new_capacity;
-      h = new_h + 1;
-    } else {
-      h = 0;
-    }
-  } else {
-    h += 1;
-  }
-
+  Array_Header *new_h = allocator_resize_align(h, old_size, new_size, item_size, h->a);
+  new_h->capacity = new_capacity;
+  h = new_h + 1;
   return h;
 }
 

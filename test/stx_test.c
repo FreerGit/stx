@@ -2,6 +2,7 @@
 #include "../stx/dyn_array.h"
 #include "../stx/mem.h"
 #include "../stx/stx.h"
+#include "dyn_array_test.h"
 #include "mem_test.h"
 #include "string_test.h"
 #include "testlib.h"
@@ -20,6 +21,7 @@ int main() {
   CHECK_TIME(pool_test(), "Pool test took:");
   CHECK_TIME(arena_test(), "Arena test took:");
   CHECK_TIME(string_test(), "String test took:");
+  CHECK_TIME(dyn_array_test(), "Dynamic array test took:");
 
   printf("%s: %d/%d passed.\e[0m\n",
          result ? "\x1B[31mUnit Tests Failed" : "\x1B[32mUnit Tests Successful",
