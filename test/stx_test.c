@@ -1,10 +1,10 @@
 
-#include "../stx/dyn_array.h"
-#include "../stx/mem.h"
-#include "../stx/stx.h"
+#include "dyn_array.h"
 #include "dyn_array_test.h"
+#include "mem.h"
 #include "mem_test.h"
 #include "string_test.h"
+#include "stx.h"
 #include "testlib.h"
 
 #include <stddef.h>

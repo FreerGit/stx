@@ -4,13 +4,14 @@
 #define MEM_H
 
 #include <assert.h>
+#include <stdbool.h>
 #include <stddef.h>
 
 // ------------------------------------------------------------- //
 //                          Helpers
 // ------------------------------------------------------------- //
 
-inline bool is_power_of_two(uintptr_t x) {
+bool is_power_of_two(uintptr_t x) {
   return (x & (x - 1)) == 0;
 }
 

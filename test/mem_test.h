@@ -1,6 +1,6 @@
 
-#include "../stx/mem.h"
-#include "../stx/stx.h"
+#include "mem.h"
+#include "stx.h"
 #include "testlib.h"
 #include <stddef.h>
 #include <stdint.h>

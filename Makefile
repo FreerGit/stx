@@ -9,6 +9,9 @@ SANFLAGS = -fsanitize=address -fsanitize=undefined -fsanitize-address-use-after-
 endif
 TARGET := a.out
 BUILD_FOLDER = build
+INCLUDE = ./stx
+
+CFLAGS += -I$(INCLUDE)
 
 SRCS := $(wildcard test/*.c)
 OBJS := $(patsubst %.c,%.o,$(SRCS))

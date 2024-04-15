@@ -1,7 +1,7 @@
-#include "../stx/dyn_array.h"
-#include "../stx/mem.h"
-#include "../stx/string.h"
-#include "../stx/stx.h"
+#include "dyn_array.h"
+#include "mem.h"
+#include "string.h"
+#include "stx.h"
 #include "testlib.h"
 #include <stdio.h>
 
