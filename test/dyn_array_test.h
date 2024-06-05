@@ -1,18 +1,18 @@
+#include "base.h"
 #include "dyn_array.h"
 #include "mem.h"
-#include "string.h"
-#include "stx.h"
+#include "string8.h"
 #include "testlib.h"
 #include <stdio.h>
 
 typedef struct {
   String8 name;
-  uint64_t age;
-  uint64_t num1;
-  uint64_t num2;
-  uint64_t num3;
-  uint64_t num4;
-  uint64_t num5;
+  ulong age;
+  ulong num1;
+  ulong num2;
+  ulong num3;
+  ulong num4;
+  ulong num5;
 } Large;
 
 // static_assert(sizeof(Large) == 64);

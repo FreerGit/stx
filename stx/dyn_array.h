@@ -1,5 +1,5 @@
+#include "base.h"
 #include "mem.h"
-#include "stx.h"
 #include <stddef.h>
 
 #ifndef DYN_ARRAY_H
@@ -20,7 +20,7 @@ static_assert(sizeof(Array_Header) == 32);
 #define array(T, a) array_init(sizeof(T), ARRAY_INITIAL_CAPACITY, DEFAULT_ALIGNMENT, a)
 #define array_align(T, align, a) array_init(sizeof(T), ARRAY_INITIAL_CAPACITY, align, a)
 
-#define array_header(a) ((Array_Header *)(a)-1)
+#define array_header(a) ((Array_Header *)(a) - 1)
 #define array_length(a) (array_header(a)->len)
 #define array_capacity(a) (array_header(a)->capacity)
 

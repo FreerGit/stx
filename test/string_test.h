@@ -1,6 +1,6 @@
+#include "base.h"
 #include "mem.h"
-#include "string.h"
-#include "stx.h"
+#include "string8.h"
 #include "testlib.h"
 #include <stdio.h>
 

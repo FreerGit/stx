@@ -1,4 +1,4 @@
-#include "stx.h"
+#include "base.h"
 
 #ifndef MEM_H
 #define MEM_H
@@ -11,17 +11,17 @@
 //                          Helpers
 // ------------------------------------------------------------- //
 
-bool is_power_of_two(uintptr_t x) {
+bool is_power_of_two(long x) {
   return (x & (x - 1)) == 0;
 }
 
 size_t align_forward_size(size_t ptr, size_t align) {
   size_t p, a, modulo;
 
-  assert(is_power_of_two((uintptr_t)align));
+  assert(is_power_of_two((long)align));
 
   p = ptr;
-  a = (uintptr_t)align;
+  a = (long)align;
   // Same as (p % a) but faster as 'a' is a power of two
   modulo = p & (a - 1);
 
@@ -33,8 +33,8 @@ size_t align_forward_size(size_t ptr, size_t align) {
   return p;
 }
 
-uintptr_t align_forward_uintptr(uintptr_t ptr, uintptr_t align) {
-  uintptr_t a, p, modulo;
+long align_forward_uintptr(long ptr, long align) {
+  long a, p, modulo;
 
   assert(is_power_of_two(align));
 
@@ -88,14 +88,14 @@ typedef struct {
 
 #define is_power_of_two(x) ((x != 0) && ((x & (x - 1)) == 0))
 
-uintptr_t align_forward(uintptr_t ptr, size_t alignment) {
-  uintptr_t p, a, modulo;
+long align_forward(long ptr, size_t alignment) {
+  long p, a, modulo;
   if (!is_power_of_two(alignment)) {
     return 0;
   }
 
   p = ptr;
-  a = (uintptr_t)alignment;
+  a = (long)alignment;
   modulo = p & (a - 1);
 
   if (modulo) {
@@ -107,16 +107,16 @@ uintptr_t align_forward(uintptr_t ptr, size_t alignment) {
 
 void *arena_alloc_aligned(size_t size, size_t alignment, void *a) {
   Arena *arena = (Arena *)a;
-  uintptr_t curr_ptr = (uintptr_t)arena->base + (uintptr_t)arena->offset;
-  uintptr_t offset = align_forward(curr_ptr, alignment);
-  offset -= (uintptr_t)arena->base;
+  long curr_ptr = (long)arena->base + (long)arena->offset;
+  long offset = align_forward(curr_ptr, alignment);
+  offset -= (long)arena->base;
 
   if (offset + size > arena->size) {
     return 0;
   }
 
   arena->committed += size;
-  void *ptr = (uint8_t *)arena->base + offset;
+  void *ptr = (uchar *)arena->base + offset;
   arena->offset = offset + size;
 
   return ptr;
@@ -233,8 +233,8 @@ void pool_free_all(Pool *p);
 void pool_init(Pool *p, void *backing_buffer, size_t backing_buffer_length,
                size_t chunk_size, size_t chunk_alignment) {
   // Align backing buffer to the specified chunk alignment
-  uintptr_t initial_start = (uintptr_t)backing_buffer;
-  uintptr_t start = align_forward_uintptr(initial_start, (uintptr_t)chunk_alignment);
+  long initial_start = (long)backing_buffer;
+  long start = align_forward_uintptr(initial_start, (long)chunk_alignment);
   backing_buffer_length -= (size_t)(start - initial_start);
 
   // Align chunk size up to the required chunk_alignment

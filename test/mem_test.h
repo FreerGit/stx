@@ -1,6 +1,6 @@
 
+#include "base.h"
 #include "mem.h"
-#include "stx.h"
 #include "testlib.h"
 #include <stddef.h>
 #include <stdint.h>
