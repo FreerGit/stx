@@ -1,6 +1,9 @@
 #define _POSIX_C_SOURCE 200809L
-#include "base.h"
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
 
+#include "base.h"
 #include "dyn_array.h"
 #include "dyn_array_test.h"
 #include "mem.h"
@@ -8,9 +11,6 @@
 #include "string_test.h"
 #include "testlib.h"
 
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
 
 #define LOG_DEBUG
 #define LOG_WITH_TIME
@@ -37,6 +37,5 @@ int main() {
 
   printf("%s: %d/%d passed.\e[0m\n",
          result ? "\x1B[31mUnit Tests Failed" : "\x1B[32mUnit Tests Successful",
-         global_total_tests - global_failed_tests,
-         global_total_tests);
+         global_total_tests - global_failed_tests, global_total_tests);
 }

@@ -1,4 +1,5 @@
-// Note that you may need to `#define _POSIX_C_SOURCE 200809L` or similar because of clock_gettime
+// Note that you may need to `#define _POSIX_C_SOURCE 200809L` or similar
+// because of clock_gettime
 
 #ifndef STX_H
 #define STX_H
@@ -22,11 +23,11 @@
   | size_t    | ulong    |
  */
 
-typedef signed char schar;
-typedef unsigned char uchar;
+typedef signed char    schar;
+typedef unsigned char  uchar;
 typedef unsigned short ushort;
-typedef unsigned int uint;
-typedef unsigned long ulong;
+typedef unsigned int   uint;
+typedef unsigned long  ulong;
 
 /*  This is interesting, can be used in many ways for optimizations.
     Leaving this here because I don't _fully_ understand the implications.*/
@@ -39,15 +40,17 @@ typedef unsigned long ulong;
 #define min(a, b) ((a) < (b) ? (a) : (b))
 // #define new(a, t, n) (t *)alloc(a, sizeof(t), n)
 
-/* Tell the compiler that the fn does not have any side-effects, this includes trivial memory writes.
-  This can be getter fn's, simple constant returns, fn's with a single switch case from int -> string (error enums) and so on. */
+/* Tell the compiler that the fn does not have any side-effects, this includes
+  trivial memory writes. This can be getter fn's, simple constant returns, fn's
+  with a single switch case from int -> string (error enums) and so on. */
 #define FN_PURE __attribute__((pure))
 
-/* Contract to the compiler that the fn does not depends on the state of memory */
+/* Contract to the compiler that the fn does not depends on the state of memory
+ */
 #define FN_CONST __attribute__((const))
 
-/* Since the compiler does not always inline, even when you tell it to, FN_UNUSED can help when -Winline
-  screams about a static fn. */
+/* Since the compiler does not always inline, even when you tell it to,
+  FN_UNUSED can help when -Winline screams about a static fn. */
 #define FN_UNUSED __atrribute__((unused))
 
 FN_PURE static inline int memeql(void const *s1, void const *s2, ulong sz) {
@@ -62,19 +65,20 @@ FN_PURE static inline int memeql(void const *s1, void const *s2, ulong sz) {
   ({                                \
     long __start = get_tickcount(); \
     x;                              \
-    long __end = get_tickcount();   \
+    long __end   = get_tickcount(); \
     long __delta = __end - __start; \
     __delta;                        \
   })
 
-#define TIME_A_BLOCK_NS(x)                                                                     \
-  ({                                                                                           \
-    struct timespec __start, __end;                                                            \
-    clock_gettime(CLOCK_MONOTONIC_RAW, &__start);                                              \
-    x;                                                                                         \
-    clock_gettime(CLOCK_MONOTONIC_RAW, &__end);                                                \
-    ulong __delta = (__end.tv_sec - __start.tv_sec) * 1e9 + (__end.tv_nsec - __start.tv_nsec); \
-    __delta;                                                                                   \
+#define TIME_A_BLOCK_NS(x)                                  \
+  ({                                                        \
+    struct timespec __start, __end;                         \
+    clock_gettime(CLOCK_MONOTONIC_RAW, &__start);           \
+    x;                                                      \
+    clock_gettime(CLOCK_MONOTONIC_RAW, &__end);             \
+    ulong __delta = (__end.tv_sec - __start.tv_sec) * 1e9 + \
+                    (__end.tv_nsec - __start.tv_nsec);      \
+    __delta;                                                \
   })
 
 #endif

@@ -38,8 +38,8 @@ long align_forward_uintptr(long ptr, long align) {
 
   assert(is_power_of_two(align));
 
-  a = align;
-  p = ptr;
+  a      = align;
+  p      = ptr;
   modulo = p & (a - 1);
   if (modulo != 0) {
     p += a - modulo;
@@ -54,15 +54,19 @@ long align_forward_uintptr(long ptr, long align) {
 typedef struct {
   void *(*alloc)(size_t bytes, void *allocator);
   void *(*alloc_align)(size_t bytes, size_t align, void *allocator);
-  void *(*resize)(void *old_mem, size_t old_size, size_t new_size, void *allocator);
-  void *(*resize_align)(void *old_mem, size_t old_size, size_t new_size, size_t align, void *allocator);
+  void *(*resize)(void *old_mem, size_t old_size, size_t new_size,
+                  void *allocator);
+  void *(*resize_align)(void *old_mem, size_t old_size, size_t new_size,
+                        size_t align, void *allocator);
   void (*free)(size_t bytes, void *ptr, void *allocator);
   void (*free_all)(void *allocator);
   void *allocator;
 } Allocator;
 
-#define allocator_alloc(T, count, a) ((T *)((a).alloc(sizeof(T) * count, (a).allocator)))
-#define allocator_alloc_align(T, count, align, a) ((T *)((a)->alloc_align(sizeof(T) * count, align, (a)->allocator)))
+#define allocator_alloc(T, count, a) \
+  ((T *)((a).alloc(sizeof(T) * count, (a).allocator)))
+#define allocator_alloc_align(T, count, align, a) \
+  ((T *)((a)->alloc_align(sizeof(T) * count, align, (a)->allocator)))
 #define allocator_resize(old_mem, old_size, new_size, a) \
   { (a)->resize(old_mem, old_size, new_size, (a)->allocator) }
 #define allocator_resize_align(old_mem, old_size, new_size, align, a) \
@@ -78,13 +82,16 @@ typedef struct {
 
 typedef struct {
   unsigned char *base;
-  size_t size;
-  size_t offset;
-  size_t committed;
+  size_t         size;
+  size_t         offset;
+  size_t         committed;
 } Arena;
 
-#define arena_alloc_init(a) \
-  (Allocator) { arena_alloc, arena_alloc_aligned, arena_resize, arena_resize_align, arena_free, arena_free_all, a }
+#define arena_alloc_init(a)                                             \
+  (Allocator) {                                                         \
+    arena_alloc, arena_alloc_aligned, arena_resize, arena_resize_align, \
+        arena_free, arena_free_all, a                                   \
+  }
 
 #define is_power_of_two(x) ((x != 0) && ((x & (x - 1)) == 0))
 
@@ -94,8 +101,8 @@ long align_forward(long ptr, size_t alignment) {
     return 0;
   }
 
-  p = ptr;
-  a = (long)alignment;
+  p      = ptr;
+  a      = (long)alignment;
   modulo = p & (a - 1);
 
   if (modulo) {
@@ -106,9 +113,9 @@ long align_forward(long ptr, size_t alignment) {
 }
 
 void *arena_alloc_aligned(size_t size, size_t alignment, void *a) {
-  Arena *arena = (Arena *)a;
-  long curr_ptr = (long)arena->base + (long)arena->offset;
-  long offset = align_forward(curr_ptr, alignment);
+  Arena *arena    = (Arena *)a;
+  long   curr_ptr = (long)arena->base + (long)arena->offset;
+  long   offset   = align_forward(curr_ptr, alignment);
   offset -= (long)arena->base;
 
   if (offset + size > arena->size) {
@@ -116,7 +123,7 @@ void *arena_alloc_aligned(size_t size, size_t alignment, void *a) {
   }
 
   arena->committed += size;
-  void *ptr = (uchar *)arena->base + offset;
+  void *ptr     = (uchar *)arena->base + offset;
   arena->offset = offset + size;
 
   return ptr;
@@ -137,8 +144,8 @@ void arena_free(size_t size, void *ptr, void *allocator) {
 }
 
 void arena_free_all(void *allocator) {
-  Arena *a = allocator;
-  a->offset = 0;
+  Arena *a     = allocator;
+  a->offset    = 0;
   a->committed = 0;
 }
 
@@ -146,9 +153,10 @@ Arena arena_init(void *buffer, size_t size) {
   return (Arena){.base = buffer, .size = size};
 }
 
-void *arena_resize_align(void *old_memory, size_t old_size, size_t new_size, size_t align, void *a) {
+void *arena_resize_align(void *old_memory, size_t old_size, size_t new_size,
+                         size_t align, void *a) {
   unsigned char *old_mem = (unsigned char *)old_memory;
-  Arena *arena = (Arena *)a;
+  Arena         *arena   = (Arena *)a;
 
   assert(is_power_of_two(align));
 
@@ -163,8 +171,8 @@ void *arena_resize_align(void *old_memory, size_t old_size, size_t new_size, siz
       }
       return old_memory;
     } else {
-      void *new_memory = arena_alloc_aligned(new_size, align, a);
-      size_t copy_size = old_size < new_size ? old_size : new_size;
+      void  *new_memory = arena_alloc_aligned(new_size, align, a);
+      size_t copy_size  = old_size < new_size ? old_size : new_size;
       // Copy across old memory to the new memory
       memcpy(new_memory, old_memory, copy_size);
       return new_memory;
@@ -177,8 +185,10 @@ void *arena_resize_align(void *old_memory, size_t old_size, size_t new_size, siz
 }
 
 // Because C doesn't have default parameters
-void *arena_resize(void *old_memory, size_t old_size, size_t new_size, void *allocator) {
-  return arena_resize_align(old_memory, old_size, new_size, DEFAULT_ALIGNMENT, (Arena *)allocator);
+void *arena_resize(void *old_memory, size_t old_size, size_t new_size,
+                   void *allocator) {
+  return arena_resize_align(old_memory, old_size, new_size, DEFAULT_ALIGNMENT,
+                            (Arena *)allocator);
 }
 
 // // Does nothing.
@@ -203,7 +213,8 @@ void *arena_resize(void *old_memory, size_t old_size, size_t new_size, void *all
 // } Temp_Arena_Memory;
 
 // Temp_Arena_Memory temp_arena_memory_begin(Arena *a) {
-//   return (Temp_Arena_Memory){.prev_offset = a->prev_offset, .curr_offset = a->curr_offset};
+//   return (Temp_Arena_Memory){.prev_offset = a->prev_offset, .curr_offset =
+//   a->curr_offset};
 // }
 
 // void temp_arena_memory_end(Temp_Arena_Memory temp) {
@@ -222,10 +233,10 @@ struct Pool_Free_Node {
 
 typedef struct {
   unsigned char *buf;
-  size_t buf_len;
-  size_t chunk_size;
+  size_t         buf_len;
+  size_t         chunk_size;
 
-  Pool_Free_Node *head; // Free List Head
+  Pool_Free_Node *head;  // Free List Head
 } Pool;
 
 void pool_free_all(Pool *p);
@@ -241,16 +252,15 @@ void pool_init(Pool *p, void *backing_buffer, size_t backing_buffer_length,
   chunk_size = align_forward_size(chunk_size, chunk_alignment);
 
   // Assert that the parameters passed are valid
-  assert(chunk_size >= sizeof(Pool_Free_Node) &&
-         "Chunk size is too small");
+  assert(chunk_size >= sizeof(Pool_Free_Node) && "Chunk size is too small");
   assert(backing_buffer_length >= chunk_size &&
          "Backing buffer length is smaller than the chunk size");
 
   // Store the adjusted parameters
-  p->buf = (unsigned char *)backing_buffer;
-  p->buf_len = backing_buffer_length;
+  p->buf        = (unsigned char *)backing_buffer;
+  p->buf_len    = backing_buffer_length;
   p->chunk_size = chunk_size;
-  p->head = NULL; // Free List Head
+  p->head       = NULL;  // Free List Head
 
   // Set up the free list for free chunks
   pool_free_all(p);
@@ -276,7 +286,7 @@ void pool_free(Pool *p, void *ptr) {
   Pool_Free_Node *node;
 
   void *start = p->buf;
-  void *end = &p->buf[p->buf_len];
+  void *end   = &p->buf[p->buf_len];
 
   if (ptr == NULL) {
     // Ignore NULL pointers
@@ -289,9 +299,9 @@ void pool_free(Pool *p, void *ptr) {
   }
 
   // Push free node
-  node = (Pool_Free_Node *)ptr;
+  node       = (Pool_Free_Node *)ptr;
   node->next = p->head;
-  p->head = node;
+  p->head    = node;
 }
 
 void pool_free_all(Pool *p) {
@@ -300,11 +310,11 @@ void pool_free_all(Pool *p) {
 
   // Set all chunks to be free
   for (i = 0; i < chunk_count; i++) {
-    void *ptr = &p->buf[i * p->chunk_size];
+    void           *ptr  = &p->buf[i * p->chunk_size];
     Pool_Free_Node *node = (Pool_Free_Node *)ptr;
     // Push free node onto thte free list
     node->next = p->head;
-    p->head = node;
+    p->head    = node;
   }
 }
 
