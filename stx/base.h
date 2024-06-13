@@ -53,6 +53,24 @@ typedef unsigned long  ulong;
   FN_UNUSED can help when -Winline screams about a static fn. */
 #define FN_UNUSED __atrribute__((unused))
 
+/* Hint for the optimizer, evaluates c and returns true/false as long  */
+#define LIKELY(c) __builtin_expect(!!(c), 1L)
+#define UNLIKELY(c) __builtin_expect(!!(c), 0L)
+
+/*
+  switch( return_code ) {
+    case RETURN_CASE_1: FALLTHROUGH;
+    case RETURN_CASE_2: FALLTHROUGH;
+    case RETURN_CASE_3:
+      case_123();
+    default:
+      case_other();
+  }
+*/
+#define FALLTHROUGH       \
+  while (0) __attribute__ \
+  ((fallthrough))
+
 FN_PURE static inline int memeql(void const *s1, void const *s2, ulong sz) {
   return 0 == memcmp(s1, s2, sz);
 }
