@@ -9,3 +9,4 @@ AllowShortFunctionsOnASingleLine: "false"
 AlignAfterOpenBracket: Align
 AlignArrayOfStructures: Left
 PointerAlignment: Left
+AlwaysBreakAfterReturnType: All
